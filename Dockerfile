@@ -6,7 +6,7 @@
 FROM python:3.9
 
 # commands run in a new layer, become available for next steps
-RUN pip install pandas ohmysportsfeedspy
+RUN pip install ohmysportsfeedspy pandas pyyaml
 
 # sets the working directory for instructions that follow (e.g. copy the file)
 #WORKDIR /scripts
