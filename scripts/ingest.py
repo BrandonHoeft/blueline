@@ -20,18 +20,18 @@ minio_client = Minio(
     secure=False
 )
 
-def fetch_msf_data(version: str, league: str, season: str, feed: str, date: str, format: str = 'json') -> Dict:
+def fetch_msf_data(version: str, league: str, season: str, feed: str, date: str, format: str) -> Dict:
     msf = MySportsFeeds(version=version)
     msf.authenticate(creds['msf']['private_key'], creds['msf']['password'])
 
     try:
-        data = msf.msf_get_data(league=league, season=season, feed=feed, date=date, format=format)
+        data = msf.msf_get_data(version=version, league=league, season=season, feed=feed, date=date, format=format)
     except Exception as e:
         print("Error:", e)
     finally:
         print(type(data))
 
-data = fetch_msf_data("2.1", league='nhl', season='2023-regular', feed='daily_dfs', date='20231011', format='json')
+data = fetch_msf_data('2.1', 'nhl', season='2023-regular', feed='daily_dfs', date='20231011', format='json')
 
 def fetch_data(api_url: str) -> Dict[str, Any]:
     response = requests.get(api_url)
