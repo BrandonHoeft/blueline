@@ -1,9 +1,9 @@
+import base64
 import json
 import requests
 import datetime
 from minio import Minio
 from io import BytesIO
-from ohmysportsfeedspy import MySportsFeeds
 from prefect import task, Flow
 from typing import Dict, Any
 import yaml
@@ -20,23 +20,46 @@ minio_client = Minio(
     secure=False
 )
 
-def fetch_msf_data(version: str, league: str, season: str, feed: str, date: str, format: str) -> Dict:
-    msf = MySportsFeeds(version=version)
-    msf.authenticate(creds['msf']['private_key'], creds['msf']['password'])
+def build_url(season, date, endpoint, data_format='json'):
+    base_url = 'https://api.mysportsfeeds.com/v2.1/pull/nhl'
+    #compiled_url = base_url + '/' + season + '/date/' + date + '/' + endpoint + '.' + format
+    compiled_url = f"{base_url}/{season}/date/{date}/{endpoint}.{data_format}"
+    return compiled_url
+
+def fetch_data(url, key, pw):
+    # Define the headers with the API key and password encoded in Base64
+    headers = {
+        "Authorization": "Basic " + base64.b64encode(
+            f'{key}:{pw}'.encode('utf-8')).decode('ascii')
+    }
+
+    # Define the parameters for the request
+    params = {
+        'dfstype': 'draftkings'
+    }
 
     try:
-        data = msf.msf_get_data(version=version, league=league, season=season, feed=feed, date=date, format=format)
+        response = requests.get(url, params=params, headers=headers)
+        print(f'Response HTTP Status Code: {response.status_code}')
     except Exception as e:
         print("Error:", e)
     finally:
-        print(type(data))
+        if response.status_code == 200:
+            response_data = response.json()
+            return response_data
+        else:
+            print(f"Ruh Roh! Response status code: {(response.status_code)}")
+            print(f"Ruh Roh! Response text: {(response.text)}")
 
-data = fetch_msf_data('2.1', 'nhl', season='2023-regular', feed='daily_dfs', date='20231011', format='json')
+dfs_url = build_url('2023-2024-regular', '20231130', 'dfs')  # list of slates with games/contests/players, including salaries and fantasy points
+dfs_prjctn_url = build_url('2023-2024-regular', '20231130', 'dfs_projections')  # Lists all players who *could* play, along with their projected fantasy points, for each supported DFS source.
+# Example usage
+apikey_token = creds['msf']['key']
+password = creds['msf']['password']
 
-def fetch_data(api_url: str) -> Dict[str, Any]:
-    response = requests.get(api_url)
-    data = response.json()
-    return data
+dfs_data = fetch_data(dfs_url, apikey_token, password)
+prjctn_data = fetch_data(dfs_prjctn_url, apikey_token, password)
+
 
 def generate_file_path(provider: str, context: str, dataset_name: str,
                        schema_version: str) -> str:
