@@ -29,8 +29,7 @@ def build_url(season, date, endpoint, data_format='json'):
 def fetch_data(url, key, pw):
     # Define the headers with the API key and password encoded in Base64
     headers = {
-        "Authorization": "Basic " + base64.b64encode(
-            f'{key}:{pw}'.encode('utf-8')).decode('ascii')
+        "Authorization": "Basic " + base64.b64encode(f'{key}:{pw}'.encode('utf-8')).decode('ascii')
     }
 
     # Define the parameters for the request
@@ -41,15 +40,34 @@ def fetch_data(url, key, pw):
     try:
         response = requests.get(url, params=params, headers=headers)
         print(f'Response HTTP Status Code: {response.status_code}')
-    except Exception as e:
-        print("Error:", e)
+    except requests.exceptions.RequestException as e:
+        print(f"Ruh Roh! HTTP Request failed: {e}")
+        return None
     finally:
         if response.status_code == 200:
             response_data = response.json()
             return response_data
+        elif response.status_code == 204:
+            print("Ruh Roh! Feed content not found. There is no available content for the feed as of yet.")
+        elif response.status_code == 304:
+            print("Ruh Roh! Feed content has not changed since your last request.")
+        elif response.status_code in [400, 404]:
+            print("Ruh Roh! Bad request. The request is malformed.")
+        elif response.status_code == 401:
+            print("Ruh Roh! Not authenticated. You need to authenticate each request using your HTTP BASIC-encoded MySportsFeeds username/password.")
+        elif response.status_code == 403:
+            print("Ruh Roh! Not authorized. Indicates you're attempting to access a feed for the current in-progress season, without a proper subscription.")
+        elif response.status_code == 429:
+            print("Ruh Roh! Too many requests. The API limits excessive overuse.")
+        elif response.status_code == 500:
+            print("Ruh Roh! An internal error has occurred, and has been logged for further inspection.")
+        elif response.status_code in [499, 502, 503]:
+            print("Ruh Roh! Server error. These errors can occur periodically and usually resolve themselves in a matter of seconds.")
         else:
-            print(f"Ruh Roh! Response status code: {(response.status_code)}")
-            print(f"Ruh Roh! Response text: {(response.text)}")
+            print(f"Ruh Roh! Unexpected response code: {response.status_code}")
+            print(f"Ruh Roh! Response text: {response.text}")
+
+# Example usage
 
 dfs_url = build_url('2023-2024-regular', '20231130', 'dfs')  # list of slates with games/contests/players, including salaries and fantasy points
 dfs_prjctn_url = build_url('2023-2024-regular', '20231130', 'dfs_projections')  # Lists all players who *could* play, along with their projected fantasy points, for each supported DFS source.
