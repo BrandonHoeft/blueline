@@ -26,6 +26,7 @@ The process view focuses on what the system does and why
  - this happens at least once per day via Prefect, but could be orchestrated intraday to get the latest data feeds from data sources, which will be relied upon by the user when interacting with the app
  - ETL jobs orchestrated with store raw data as JSON, transform them to parquet files, model them as iceberg tables, and be made available for query operations in support of the user's application needs
 
+This diagram represents the core data flow and processing architecture of the NHL DFS optimization system.
 ```mermaid
 
 flowchart TB
