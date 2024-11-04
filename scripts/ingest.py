@@ -146,7 +146,7 @@ def ingest_dfs_flow(
         endpoint: str = "msf_daily_dfs",
         creds_path: str = "creds.yml"
 ) -> None:
-    """Flow for ingesting DFS data."""
+    """Prefect Flow for ingesting MySportsFeeds Daily DFS data."""
     logger = get_run_logger()
 
     # Set defaults if not provided
@@ -184,7 +184,7 @@ def ingest_projections_flow(
         season: str = None,
         creds_path: str = "creds.yml"
 ) -> None:
-    """Flow for ingesting DFS projections data."""
+    """Prefect Flow for ingesting MySportsFeeds Daily DFS projections data."""
     return ingest_dfs_flow(
         date=date,
         season=season,
