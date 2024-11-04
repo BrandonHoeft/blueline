@@ -61,6 +61,30 @@ services:
     networks:
       - data-lake-network
 
+  # TODO: Add service for Plotly Dash app
+#  dash:
+#    build:
+#      context: ./dash
+#      dockerfile: Dockerfile
+#    container_name: dash
+#    ports:
+#      - "8050:8050"
+#    depends_on:
+#      - trino
+#    networks:
+#      - data-lake-network
+
+  # TODO: Add service for Prefect server (if needed)
+  prefect:
+    image: prefecthq/prefect:2-python3.9
+    container_name: prefect
+    ports:
+      - "4200:4200"
+    depends_on:
+      - postgres
+    networks:
+      - data-lake-network
+
 volumes:
   minio_data:
   postgres_data:
@@ -69,3 +93,5 @@ volumes:
 
 networks:
   data-lake-network:
+
+# TODO: Add any additional services or configurations as needed
