@@ -1,5 +1,6 @@
 version: '3.8'
 
+# Local dev URL: http://127.0.0.1:9001
 services:
   minio:
     image: minio/minio
@@ -74,16 +75,19 @@ services:
 #    networks:
 #      - data-lake-network
 
-  # TODO: Add service for Prefect server (if needed)
-  prefect:
-    image: prefecthq/prefect:2-python3.9
-    container_name: prefect
-    ports:
-      - "4200:4200"
-    depends_on:
-      - postgres
-    networks:
-      - data-lake-network
+# TODO: Add service for Prefect server (if needed)
+# Prefect Local Dev URL: http://127.0.0.1:4200
+# set up prefect python client to use this service: (venv)>> prefect config set PREFECT_API_URL=http://localhost:4200/api
+
+#  prefect:
+#    image: prefecthq/prefect:2-python3.9
+#    container_name: prefect
+#    ports:
+#      - "4200:4200"
+#    depends_on:
+#      - postgres
+#    networks:
+#      - data-lake-network
 
 volumes:
   minio_data:
