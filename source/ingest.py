@@ -111,7 +111,7 @@ def save_to_minio(data: Dict[str, Any], bucket_name: str,
 def ingest_dfs_flow(
         date: str = None,
         season: str = "2024-2025-regular",
-        endpoint: str = "msf_daily_dfs",
+        endpoint: str = "dfs",
         creds_path: str = "creds.yml"
 ) -> None:
     """Prefect Flow for ingesting MySportsFeeds Daily DFS data."""
@@ -149,7 +149,7 @@ def ingest_projections_flow(
     return ingest_dfs_flow(
         date=date,
         season=season,
-        endpoint="msf_daily_dfs_projections",
+        endpoint="dfs_projections",
         creds_path=creds_path
     )
 
