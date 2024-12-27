@@ -78,22 +78,30 @@ services:
 # TODO: Add service for Prefect server (if needed)
 # Prefect Local Dev URL: http://127.0.0.1:4200
 # set up prefect python client to use this service: (venv)>> prefect config set PREFECT_API_URL=http://localhost:4200/api
+prefect:
+    image: prefecthq/prefect:2.14.4
+    container_name: prefect-server
+    ports:
+      - "4200:4200"
+    command: >
+      bash -c "prefect server start
+      --host 0.0.0.0
+      --port 4200"
+    environment:
+      - PREFECT_UI_URL=http://localhost:4200
+      - PREFECT_API_URL=http://localhost:4200/api
+    volumes:
+      - prefect_data:/root/.prefect
+    networks:
+      - data-lake-network
 
-#  prefect:
-#    image: prefecthq/prefect:2-python3.9
-#    container_name: prefect
-#    ports:
-#      - "4200:4200"
-#    depends_on:
-#      - postgres
-#    networks:
-#      - data-lake-network
 
 volumes:
   minio_data:
   postgres_data:
   hive_metastore_data:
   trino_data:
+  prefect_data:
 
 networks:
   data-lake-network:
