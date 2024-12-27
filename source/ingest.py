@@ -106,7 +106,7 @@ def save_to_minio(data: Dict[str, Any], bucket_name: str,
     )
     logger.info(f"Successfully saved data to {bucket_name}/{object_name}")
 
-
+########################## MySportsFeeds APIs ##################################
 @flow(name="ingest-dfs-data")
 def ingest_dfs_flow(
         date: str = None,
@@ -153,8 +153,82 @@ def ingest_projections_flow(
         creds_path=creds_path
     )
 
+########################## https://moneypuck.com/data.htm ######################
+@task(cache_key_fn=task_input_hash)
+def build_moneypuck_url(season_year: str, season_type: str = "regular",
+                        dataset: str = "teams") -> str:
+    """
+    Build MoneyPuck URL for data ingestion
+
+    Parameters:
+        season_year: Year of season start (e.g. '2024')
+        season_type: Either 'regular' or 'playoffs'
+        dataset: The dataset to fetch (default 'teams')
+
+    Returns:
+        Full URL for MoneyPuck data
+    """
+    logger = get_run_logger()
+    url = f"https://moneypuck.com/moneypuck/playerData/seasonSummary/{season_year}/{season_type}/{dataset}.csv"
+    logger.info(f"Built MoneyPuck URL: {url}")
+    return url
+
+
+@task(retries=3, retry_delay_seconds=60)
+def fetch_moneypuck_data(url: str) -> bytes:
+    """
+    Fetch data from MoneyPuck website.
+    Returns raw CSV bytes to preserve original format.
+    """
+    logger = get_run_logger()
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    logger.info(f"Successfully fetched data from MoneyPuck with status code {response.status_code}")
+    return response.content  # Return raw bytes
+
+
+@flow(name="ingest-moneypuck-teams-stats")
+def ingest_moneypuck_teams_flow(
+        season_year: str = "2024",
+        season_type: str = "regular",
+        creds_path: str = "creds.yml"
+) -> None:
+    """Prefect Flow for ingesting MoneyPuck team statistics data."""
+    logger = get_run_logger()
+
+    # Initialize MinIO client
+    creds = load_credentials(creds_path)
+    minio_client = init_minio_client(creds)
+
+    # Execute flow
+    url = build_moneypuck_url(season_year, season_type)
+    data = fetch_moneypuck_data(url)
+
+    # Generate file path
+    parsed_date = datetime.datetime.today().strftime('%Y-%m-%d')
+    file_path = generate_file_path(
+        provider="moneypuck",
+        context="dev",
+        dataset_name="moneypuck_team_stats",
+        schema_version="unknown",
+        date=parsed_date
+    ).replace('.json', '.csv')  # Adjust extension for CSV
+
+    # Save raw CSV bytes to MinIO
+    minio_client.put_object(
+        "raw-nhl-dfs",
+        file_path,
+        BytesIO(data),
+        len(data)
+    )
+    logger.info(f"Completed ingestion of {season_year} {season_type} season MoneyPuck team stats as of {parsed_date}")
+
 
 if __name__ == "__main__":
     # Run both flows for current date
     ingest_dfs_flow()  # Uses defaults (current date)
     ingest_projections_flow()  # Uses defaults (current date)
+    #TODO: Need to better parameterize different future seasons in prefect
+    ingest_moneypuck_teams_flow()  # Uses defaults (2024 regular season)
