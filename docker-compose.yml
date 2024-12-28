@@ -2,6 +2,27 @@ version: '3.8'
 
 # Local dev URL: http://127.0.0.1:9001
 services:
+  # python 3.11 interpreter as my local development python interpreter in Pycharm Pro
+  # that's also networked to utilize all services in here
+  python-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    # maps local code into this dir so it can see real-time code changes, set breakpoints, debug effectively from pycharm
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - PREFECT_API_URL=http://prefect-server:4200/api  # any python interacting with prefect server can point to here
+    # Remove container when stopped
+    restart: "no"
+    # Clean up when container exits
+    command: [ "python3" ]
+    stdin_open: true
+    tty: true
+    networks:
+      - data-lake-network
+
   minio:
     image: minio/minio
     container_name: minio
