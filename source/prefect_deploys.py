@@ -4,15 +4,15 @@ Scheduling the prefect flows, defined in ingest.py, to deploy to my docker
 prefect server
 """
 
-from prefect.client.schemas.schedules import CronSchedule
-from source.ingest import (
+import subprocess
+from prefect import deploy
+from source.common.ingest_utils import (
     ingest_dfs_flow,
     ingest_projections_flow,
     ingest_moneypuck_teamstats_flow
 )
 
 # Common parameters for all deployments
-CRON_SCHEDULE = "0 11 * 10-12,1-6 *"  # 11am Chicago time, Oct-June
 
 # Flow parameters with defaults
 MSF_DFS_PARAMS = {
@@ -33,15 +33,30 @@ MONEYPUCK_PARAMS = {
     "creds_path": "creds.yml"
 }
 
+
+def create_work_pool():
+    """Docs on this: https://orion-docs.prefect.io/latest/tutorial/work-pools/"""
+    subprocess.run(["prefect", "work-pool", "create", "blueline-ingestion-pool", "--type",
+                    "docker"], check=True)
+
 if __name__ == "__main__":
-    ingest_dfs_flow.serve(name="ingest-dfs-flow-deployment",
-                          schedules=[CronSchedule(cron=CRON_SCHEDULE, timezone="America/Chicago")],
-                          parameters=MSF_DFS_PARAMS)
+    #create_work_pool()  # Create the work pool: blueline-ingestion-pool
+    deploy(
+        # Use the `to_deployment` method to specify configuration
+        # specific to each deployment
+        ingest_dfs_flow.to_deployment("ingest-dfs-flow-deployment",
+                                      parameters=MSF_DFS_PARAMS
+                                  ),
+        ingest_projections_flow.to_deployment(name="ingest-projections-flow-deployment",
+                                              parameters=MSF_DFS_PROJECTIONS_PARAMS
+                                          ),
+        ingest_moneypuck_teamstats_flow.to_deployment(
+            name="ingest-moneypuck-teamstats-flow-deployment",
+            parameters=MONEYPUCK_PARAMS
+            ),
 
-    ingest_projections_flow.serve(name="ingest-projections-flow-deployment",
-                                  schedules=[CronSchedule(cron=CRON_SCHEDULE, timezone="America/Chicago")],
-                                  parameters=MSF_DFS_PROJECTIONS_PARAMS)
-
-    ingest_moneypuck_teamstats_flow.serve(name="ingest-moneypuck-teamstats-flow-deployment",
-                                          schedules=[CronSchedule(cron=CRON_SCHEDULE, timezone="America/Chicago")],
-                                          parameters=MONEYPUCK_PARAMS)
+        # Specify shared configuration for both deployments
+        image="blueline-ingestion:dev",
+        push=False,
+        work_pool_name="blueline-ingestion-pool",
+    )
