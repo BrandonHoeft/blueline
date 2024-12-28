@@ -1,5 +1,5 @@
-duckdb
-minio
+duckdb==1.1.3
+minio==7.2.7
 ohmysportsfeedspy
-prefect
+prefect==3.1.10
 PyYAML
