@@ -143,13 +143,14 @@ def ingest_dfs_flow(
 def ingest_projections_flow(
         date: str = None,
         season: str = "2024-2025-regular",
+        endpoint: str = "dfs_projections",
         creds_path: str = "creds.yml"
 ) -> None:
     """Prefect Flow for ingesting MySportsFeeds Daily DFS projections data."""
     return ingest_dfs_flow(
         date=date,
         season=season,
-        endpoint="dfs_projections",
+        endpoint=endpoint,
         creds_path=creds_path
     )
 
@@ -190,7 +191,7 @@ def fetch_moneypuck_data(url: str) -> bytes:
 
 
 @flow(name="ingest-moneypuck-teams-stats")
-def ingest_moneypuck_teams_flow(
+def ingest_moneypuck_teamstats_flow(
         season_year: str = "2024",
         season_type: str = "regular",
         creds_path: str = "creds.yml"
@@ -231,4 +232,4 @@ if __name__ == "__main__":
     ingest_dfs_flow()  # Uses defaults (current date)
     ingest_projections_flow()  # Uses defaults (current date)
     #TODO: Need to better parameterize different future seasons in prefect
-    ingest_moneypuck_teams_flow()  # Uses defaults (2024 regular season)
+    ingest_moneypuck_teamstats_flow()  # Uses defaults (2024 regular season)
