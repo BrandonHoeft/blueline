@@ -1,9 +1,10 @@
 # source/ingest.py
 """
-Data ingestion script for NHL DFS data lake.
+Data ingestion script defining the prefect flow logic for NHL DFS data lake.
 Handles ingestion from MySportsFeeds API endpoints:
 - Daily DFS data (slates, contests, players, salaries)
 - DFS Projections data
+- Moneypuck.com Team aggregated stats daily
 
 Can be run directly or deployed via Prefect server.
 """
