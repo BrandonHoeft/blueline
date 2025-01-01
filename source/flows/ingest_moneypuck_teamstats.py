@@ -8,6 +8,7 @@ import datetime
 import requests
 from io import BytesIO
 from prefect import task, flow, get_run_logger
+import pytz
 from prefect.tasks import task_input_hash
 from source.common.ingest_utils import (
     load_credentials,
@@ -69,7 +70,8 @@ def ingest_moneypuck_teamstats_flow(
     data = fetch_moneypuck_data(url)
 
     # Generate file path
-    parsed_date = datetime.datetime.today().strftime('%Y-%m-%d')
+    chicago_tz = pytz.timezone('America/Chicago')  # in case running this ~11pm CDT/CST ever. don't want date to round to next day if it's eastern time
+    parsed_date = datetime.datetime.now(tz=chicago_tz).strftime('%Y-%m-%d')
     file_path = generate_file_path(
         provider="moneypuck",
         context="dev",
