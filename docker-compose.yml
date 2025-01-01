@@ -38,50 +38,50 @@ services:
     networks:
       - data-lake-network
 
-  postgres:
-    image: postgres:13
-    container_name: postgres
-    environment:
-      POSTGRES_DB: metastore
-      POSTGRES_USER: hive
-      POSTGRES_PASSWORD: hive
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - data-lake-network
+#  postgres:
+#    image: postgres:13
+#    container_name: postgres
+#    environment:
+#      POSTGRES_DB: metastore
+#      POSTGRES_USER: hive
+#      POSTGRES_PASSWORD: hive
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    networks:
+#      - data-lake-network
 
-  hive-metastore:
-    image: apache/hive:4.0.0-alpha-1
-    container_name: hive-metastore
-    environment:
-      HIVE_METASTORE_USER: hive
-      HIVE_METASTORE_PASSWORD: hive
-      HIVE_METASTORE_DB_HOST: postgres
-      HIVE_METASTORE_DB_TYPE: postgres
-      HIVE_METASTORE_DB_DRIVER: org.postgresql.Driver
-      SERVICE_NAME: metastore
-    ports:
-      - "9083:9083"
-    depends_on:
-      - postgres
-    volumes:
-      - hive_metastore_data:/data
-    networks:
-      - data-lake-network
+#  hive-metastore:
+#    image: apache/hive:4.0.0-alpha-1
+#    container_name: hive-metastore
+#    environment:
+#      HIVE_METASTORE_USER: hive
+#      HIVE_METASTORE_PASSWORD: hive
+#      HIVE_METASTORE_DB_HOST: postgres
+#      HIVE_METASTORE_DB_TYPE: postgres
+#      HIVE_METASTORE_DB_DRIVER: org.postgresql.Driver
+#      SERVICE_NAME: metastore
+#    ports:
+#      - "9083:9083"
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - hive_metastore_data:/data
+#    networks:
+#      - data-lake-network
 
-  trino:
-    image: trinodb/trino
-    container_name: trino
-    ports:
-      - "8080:8080"
-    depends_on:
-      - hive-metastore
-    volumes:
-      - trino_data:/data
-    networks:
-      - data-lake-network
+#  trino:
+#    image: trinodb/trino
+#    container_name: trino
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - hive-metastore
+#    volumes:
+#      - trino_data:/data
+#    networks:
+#      - data-lake-network
 
   # TODO: Add service for Plotly Dash app
 #  dash:
@@ -119,9 +119,9 @@ services:
 
 volumes:
   minio_data:
-  postgres_data:
-  hive_metastore_data:
-  trino_data:
+#  postgres_data:
+#  hive_metastore_data:
+#  trino_data:
   prefect_data:
 
 networks:
